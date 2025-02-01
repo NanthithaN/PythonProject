@@ -1,0 +1,38 @@
+name: automation
+
+on:
+  schedule:
+    - cron: '0 3 * * *'    # Runs at 3:00 AM UTC daily
+    - cron: '0 6 * * *'    # Runs at 6:00 AM UTC
+    - cron: '0 9 * * *'    # Runs at 9:00 AM UTC
+    - cron: '0 12 * * *'   # Runs at 12:00 PM UTC
+  workflow_dispatch:       # Allows manual triggering
+
+jobs:
+  run-scripts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install Dependencies
+        run: |
+          pip install openpyxl  # Add other packages if your scripts need them
+
+      - name: Run p2.py
+        run: python p2.py
+
+      - name: Run p4.py
+        run: python p4.py
+
+      - name: Run p5.py
+        run: python p5.py
+
+      - name: Run p6.py
+        run: python p6.py
