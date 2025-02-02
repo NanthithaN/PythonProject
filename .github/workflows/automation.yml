@@ -25,7 +25,8 @@ jobs:
         run: |
           pip install openpyxl
           pip install playwright
-          playwright install  # Ensure browsers are installed for Playwright
+          playwright install
+          pip install pandas  # Added pandas for data processing
 
       - name: Run p2.py
         run: python p2.py
