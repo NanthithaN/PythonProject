@@ -1,33 +1,31 @@
-from playwright.sync_api import sync_playwright
 import time
-
-# Constants
-VIEW_TIME = 7 * 60 * 60  # 7 hours in seconds
-REFRESH_INTERVAL = 6 * 60 * 60  # 6 hours in seconds
+from playwright.sync_api import sync_playwright
+import os
 
 def open_and_refresh():
-    print("Opening the webpage and setting up auto-refresh...")
-
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)  # Keep browser visible
+        # Check if running in CI environment (e.g., GitHub Actions)
+        headless = os.getenv("CI", "false").lower() == "true"
+
+        # Launch browser, headless=True for CI and headless=False for local testing
+        browser = p.chromium.launch(headless=headless)  # Use headless mode based on environment
         page = browser.new_page()
 
-        start_time = time.time()  # Track start time
+        # Navigate to the webpage
+        page.goto('https://www.hdfcsec.com/research/stock-market-ideas/investment-ideas?assetId=3&categoryCode=FUND&Sector=&RecoType=&CallType=OPEN&Target_Min=&Target_Max=&horizon_Max=&horizon_Min=&RecoDateRange=&BucketID=379&securityId=')  # Replace with your target URL
 
-        while time.time() - start_time < VIEW_TIME:
-            print("Loading the page...")
-            page.goto("https://www.hdfcsec.com/research/stock-market-ideas/investment-ideas?assetId=3&categoryCode=FUND&Sector=&RecoType=&CallType=OPEN&Target_Min=&Target_Max=&horizon_Max=&horizon_Min=&RecoDateRange=&BucketID=379&securityId=")
-            page.wait_for_load_state("networkidle")
+        # Print to confirm the page is loaded
+        print("Page loaded, refreshing every 5 seconds...")
 
-            print("Page loaded successfully. Waiting for next refresh...")
+        # Refresh the page every 5 seconds for 10 minutes (600 seconds)
+        start_time = time.time()
+        while time.time() - start_time < 600:  # Run for 10 minutes
+            page.reload()  # Reload the page
+            time.sleep(5)  # Wait 5 seconds before refreshing again (adjust as necessary)
 
-            # Wait for the refresh interval but ensure we don't exceed VIEW_TIME
-            remaining_time = VIEW_TIME - (time.time() - start_time)
-            sleep_time = min(REFRESH_INTERVAL, remaining_time)
-            time.sleep(sleep_time)
-
-        print("Closing browser after 7 hours.")
+        # After 10 minutes, print a message and close the browser
+        print("10 minutes passed, closing the browser.")
         browser.close()
 
-# Run the function
-open_and_refresh()
+if __name__ == "__main__":
+    open_and_refresh()
