@@ -39,3 +39,6 @@ jobs:
 
       - name: Run p6.py
         run: python p6.py
+
+      - name: Mark Workflow as Successful
+        run: echo "Workflow completed successfully!"
