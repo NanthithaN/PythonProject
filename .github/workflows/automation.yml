@@ -30,9 +30,6 @@ jobs:
         pip install pandas playwright openpyxl
         playwright install
 
-    - name: Debug: Simple Echo Command
-      run: echo "Debug step is working!"
-
     - name: Run p2.py
       run: python p2.py
 
