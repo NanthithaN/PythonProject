@@ -1,44 +1,49 @@
-name: Excel Updater Automation
+name: Run Python Scripts
 
 on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
   schedule:
-    - cron: '0 3 * * *'    # Runs at 3:00 AM UTC daily
+    - cron: '0 3 * * *'  # Runs daily at 3 AM UTC
     - cron: '0 6 * * *'    # Runs at 6:00 AM UTC
     - cron: '0 9 * * *'    # Runs at 9:00 AM UTC
     - cron: '0 12 * * *'   # Runs at 12:00 PM UTC
-  workflow_dispatch:       # Allows manual triggering
 
 jobs:
   run-scripts:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+    - name: Checkout Repository
+      uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
 
-      - name: Install Dependencies
-        run: |
-          pip install openpyxl
-          pip install playwright
-          playwright install
-          pip install pandas  # Added pandas for data processing
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pandas playwright openpyxl
+        playwright install
 
-      - name: Run p2.py
-        run: python p2.py
+    - name: Debug: Show Workflow File
+      run: cat .github/workflows/automation.yml
 
-      - name: Run p4.py
-        run: python p4.py
+    - name: Run p2.py
+      run: python p2.py
 
-      - name: Run p5.py
-        run: python p5.py
+    - name: Run p4.py
+      run: python p4.py
 
-      - name: Run p6.py
-        run: python p6.py
+    - name: Run p5.py
+      run: python p5.py
 
-      - name: Mark Workflow as Successful
-        run: echo "Workflow completed successfully!"
+    - name: Run p6.py
+      run: python p6.py
+
+    - name: Workflow Completed Successfully
+      run: echo "All scripts ran successfully!"
