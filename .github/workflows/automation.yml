@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 3 * * *'  # Runs daily at 3 AM UTC
-    - cron: '0 6 * * *'    # Runs at 6:00 AM UTC
-    - cron: '0 9 * * *'    # Runs at 9:00 AM UTC
-    - cron: '0 12 * * *'   # Runs at 12:00 PM UTC
+    - cron: '0 6 * * *'   # Runs at 6:00 AM UTC
+    - cron: '0 9 * * *'   # Runs at 9:00 AM UTC
+    - cron: '0 12 * * *'  # Runs at 12:00 PM UTC
 
 jobs:
   run-scripts:
