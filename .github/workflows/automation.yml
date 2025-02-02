@@ -31,7 +31,8 @@ jobs:
         playwright install
 
     - name: Debug: Show Workflow File
-      run: cat .github/workflows/automation.yml
+      run: |
+        cat .github/workflows/automation.yml
 
     - name: Run p2.py
       run: python p2.py
