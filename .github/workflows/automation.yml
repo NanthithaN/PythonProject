@@ -1,4 +1,4 @@
-name: automation
+name: Excel Updater Automation
 
 on:
   schedule:
@@ -23,7 +23,9 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install openpyxl  # Add other packages if your scripts need them
+          pip install openpyxl
+          pip install playwright
+          playwright install  # Ensure browsers are installed for Playwright
 
       - name: Run p2.py
         run: python p2.py
