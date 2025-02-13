@@ -13,55 +13,59 @@ def scrape_and_save_data():
 
     try:
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)  # Use Chromium browser
+            browser = p.chromium.launch(headless=False)  # ✅ Open browser to debug
             page = browser.new_page()
 
-            # Navigate to the URL
-            page.goto(URL)
+            # Navigate to the URL & wait for full load
+            page.goto(URL, wait_until="load", timeout=120000)
             print("Page loaded. Extracting data...")
 
-            # Wait for the table to load completely
-            page.wait_for_selector("table")
+            # Wait for table to be fully populated
+            page.wait_for_selector("table", timeout=120000)
+            page.wait_for_function("document.querySelector('table tbody tr') !== null", timeout=120000)
 
             # Extract table rows
             rows = []
             for row in page.query_selector_all("table tbody tr"):
                 cells = [cell.inner_text().strip() for cell in row.query_selector_all("td")]
 
-                # Ensure the row has enough columns to extract
+                # Ensure the row has enough columns
                 if len(cells) >= 5:
                     row_data = {
-                        "Company Name": cells[0],  # Company name
-                        "Reco. Price": cells[1],   # Recommendation price
-                        "Target Price": cells[2],  # Target price
-                        "Stop Loss": cells[3],     # Stop loss
-                        "Market Price": cells[4]   # Current market price
+                        "Company Name": cells[0],
+                        "Reco. Price": cells[1],
+                        "Target Price": cells[2],
+                        "Stop Loss": cells[3],
+                        "Market Price": cells[4]
                     }
                     rows.append(row_data)
 
-            # Debugging: Print extracted rows
-            print(f"Extracted {len(rows)} rows. Example row: {rows[0] if rows else 'No rows found'}")
+            print(f"Extracted {len(rows)} rows.")
 
-            # Create a DataFrame
-            df = pd.DataFrame(rows, columns=["Company Name", "Reco. Price", "Target Price", "Stop Loss", "Market Price"])
+            # Save data only if rows are found
+            if rows:
+                df = pd.DataFrame(rows)
 
-            # Check if the file exists and close it if open
-            if os.path.exists(EXCEL_FILE):
-                try:
-                    os.rename(EXCEL_FILE, EXCEL_FILE)  # Try renaming to check if it's open
-                except PermissionError:
-                    print(f"Error: The file '{EXCEL_FILE}' is open. Please close it and run again.")
-                    return
+                # Ensure Excel file is not open
+                if os.path.exists(EXCEL_FILE):
+                    try:
+                        os.rename(EXCEL_FILE, EXCEL_FILE)  # Check if file is open
+                    except PermissionError:
+                        print(f"Error: Close '{EXCEL_FILE}' and try again.")
+                        return
 
-            # Save data to Excel
-            with pd.ExcelWriter(EXCEL_FILE, mode="w") as writer:
-                df.to_excel(writer, index=False, sheet_name="Stock Data")
+                # Save to Excel
+                with pd.ExcelWriter(EXCEL_FILE, mode="w", engine="openpyxl") as writer:
+                    df.to_excel(writer, index=False, sheet_name="Stock Data")
 
-            print("Data successfully saved in Excel.")
+                print(f"Data successfully saved to {EXCEL_FILE}.")
+            else:
+                print("No data found.")
 
             browser.close()
+
     except Exception as e:
         print(f"Error occurred: {e}")
 
-# Call the function to scrape data
+# Run the function
 scrape_and_save_data()
