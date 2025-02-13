@@ -3,8 +3,8 @@ name: Run Python Scripts
 on:
   push:
     branches:
-      - main  # Trigger when pushing to the main branch
-  workflow_dispatch:  # Allows manual triggering from GitHub UI
+      - main  # Replace with your branch name if different
+  workflow_dispatch:  # Allows manual triggering from the GitHub UI
   schedule:
     - cron: '0 3 * * *'  # Runs daily at 3 AM UTC
     - cron: '0 6 * * *'  # Runs daily at 6 AM UTC
@@ -30,19 +30,23 @@ jobs:
         pip install pandas playwright openpyxl
         playwright install
 
-    - name: Run Python Scripts
-      run: |
-        python p2.py
-        python p4.py
-        python p5.py
-        python p6.py
+    - name: Run p2.py
+      run: python p2.py
 
-    - name: Upload Generated Excel Files
-      uses: actions/upload-artifact@v3
+    - name: Run p4.py
+      run: python p4.py
+
+    - name: Run p5.py
+      run: python p5.py
+
+    - name: Run p6.py
+      run: python p6.py
+
+    - name: Upload all Excel files
+      uses: actions/upload-artifact@v4  
       with:
         name: stock_data_files
-        path: |
-          f1.xlsx
-          f2.xlsx
-          kotak_stock_data.xlsx
-          kotak_stock_long.xlsx
+        path: "*.xlsx"
+
+    - name: Workflow Completed Successfully
+      run: echo "All scripts ran successfully!"
