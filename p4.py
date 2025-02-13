@@ -17,11 +17,14 @@ def scrape_and_save_data():
             page = browser.new_page()
 
             # Navigate to the URL
-            page.goto(URL)
+            page.goto(URL, timeout=90000)  # Ensure enough time to load
             print("Page loaded. Extracting data...")
 
+            # Ensure full page load before selecting the table
+            page.wait_for_load_state("networkidle")
+
             # Wait for the table to load completely
-            page.wait_for_selector("table")
+            page.wait_for_selector("table", timeout=60000)
 
             # Extract table rows
             rows = []
