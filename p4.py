@@ -1,6 +1,7 @@
 from playwright.sync_api import sync_playwright
 import pandas as pd
 import os
+import time
 
 # URL to scrape
 URL = "https://www.kotaksecurities.com/stock-research-recommendations/equity/shortterm/"
@@ -13,32 +14,36 @@ def scrape_and_save_data():
 
     try:
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)  # Use Chromium browser
+            # Use persistent context to mitigate bot detection
+            browser = p.chromium.launch_persistent_context(user_data_dir="/tmp/playwright", headless=True)
             page = browser.new_page()
 
             # Navigate to the URL
-            page.goto(URL, timeout=90000)  # Ensure enough time to load
+            page.goto(URL)
             print("Page loaded. Extracting data...")
 
-            # Ensure full page load before selecting the table
-            page.wait_for_load_state("networkidle")
+            # Take a screenshot for debugging
+            page.screenshot(path="debug.png")
+            print("Screenshot taken. Check debug.png for UI verification.")
 
-            # Wait for the table to load completely
-            page.wait_for_selector("table", timeout=60000)
+            # Wait for the table to be visible
+            page.wait_for_selector("table", state="visible", timeout=120000)
+
+            # Sleep to allow all elements to load
+            time.sleep(5)
 
             # Extract table rows
             rows = []
             for row in page.query_selector_all("table tbody tr"):
                 cells = [cell.inner_text().strip() for cell in row.query_selector_all("td")]
 
-                # Ensure the row has enough columns to extract
                 if len(cells) >= 5:
                     row_data = {
-                        "Company Name": cells[0],  # Company name
-                        "Reco. Price": cells[1],   # Recommendation price
-                        "Target Price": cells[2],  # Target price
-                        "Stop Loss": cells[3],     # Stop loss
-                        "Market Price": cells[4]   # Current market price
+                        "Company Name": cells[0],
+                        "Reco. Price": cells[1],
+                        "Target Price": cells[2],
+                        "Stop Loss": cells[3],
+                        "Market Price": cells[4]
                     }
                     rows.append(row_data)
 
@@ -48,10 +53,10 @@ def scrape_and_save_data():
             # Create a DataFrame
             df = pd.DataFrame(rows, columns=["Company Name", "Reco. Price", "Target Price", "Stop Loss", "Market Price"])
 
-            # Check if the file exists and close it if open
+            # Ensure Excel file is not open
             if os.path.exists(EXCEL_FILE):
                 try:
-                    os.rename(EXCEL_FILE, EXCEL_FILE)  # Try renaming to check if it's open
+                    os.rename(EXCEL_FILE, EXCEL_FILE)
                 except PermissionError:
                     print(f"Error: The file '{EXCEL_FILE}' is open. Please close it and run again.")
                     return
