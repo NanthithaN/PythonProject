@@ -1,5 +1,4 @@
 from playwright.sync_api import sync_playwright
-from playwright_stealth import stealth
 import pandas as pd
 import os
 
@@ -7,25 +6,22 @@ import os
 URL = "https://www.kotaksecurities.com/stock-research-recommendations/equity/longterm/"
 
 # Excel file to save data
-EXCEL_FILE = "kotak_stock_data_p5.xlsx"
+EXCEL_FILE = "kotak_stock_data.xlsx"
 
 def scrape_and_save_data():
     print("Starting the scraping process...")
 
     try:
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
+            browser = p.chromium.launch(headless=True)  # Use Chromium browser
             page = browser.new_page()
 
-            # Apply stealth mode correctly
-            stealth(page)
-
             # Navigate to the URL
-            page.goto(URL, timeout=120000)
+            page.goto(URL)
             print("Page loaded. Extracting data...")
 
             # Wait for the table to load completely
-            page.wait_for_selector("table", timeout=120000)
+            page.wait_for_selector("table")
 
             # Extract table rows
             rows = []
@@ -35,11 +31,11 @@ def scrape_and_save_data():
                 # Ensure the row has enough columns to extract
                 if len(cells) >= 5:
                     row_data = {
-                        "Company Name": cells[0],
-                        "Reco. Price": cells[1],
-                        "Target Price": cells[2],
-                        "Stop Loss": cells[3],
-                        "Market Price": cells[4]
+                        "Company Name": cells[0],  # Company name
+                        "Reco. Price": cells[1],   # Recommendation price
+                        "Target Price": cells[2],  # Target price
+                        "Stop Loss": cells[3],     # Stop loss
+                        "Market Price": cells[4]   # Current market price
                     }
                     rows.append(row_data)
 
@@ -52,7 +48,7 @@ def scrape_and_save_data():
             # Check if the file exists and close it if open
             if os.path.exists(EXCEL_FILE):
                 try:
-                    os.rename(EXCEL_FILE, EXCEL_FILE)
+                    os.rename(EXCEL_FILE, EXCEL_FILE)  # Try renaming to check if it's open
                 except PermissionError:
                     print(f"Error: The file '{EXCEL_FILE}' is open. Please close it and run again.")
                     return
@@ -62,6 +58,7 @@ def scrape_and_save_data():
                 df.to_excel(writer, index=False, sheet_name="Stock Data")
 
             print("Data successfully saved in Excel.")
+
             browser.close()
     except Exception as e:
         print(f"Error occurred: {e}")
